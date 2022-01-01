@@ -14,7 +14,8 @@ def project(request, pk):
     project = get_object_or_404(Project, pk=pk)
     return render(request, "projects/project.html", {"project": project})
 
-@login_required
+
+@login_required(login_url="login")
 def create_project(request):
     user_profile = request.user.profile
     form = ProjectForm()
@@ -36,7 +37,7 @@ def create_project(request):
     return render(request, "projects/project_form.html", {"form": form})
 
 
-@login_required
+@login_required(login_url="login")
 def update_project(request, pk):
     profile = request.user.profile
     project = get_object_or_404(Project, pk=pk)
@@ -61,3 +62,20 @@ def update_project(request, pk):
             return redirect("projects")
         
     return render(request, "projects/project_form.html", {"form": form})
+
+
+@login_required(login_url="login")
+def delete_project(request, pk):
+    profile = request.user.profile
+    project = get_object_or_404(Project, pk=pk)
+    
+    if project.owner.id != profile.id:
+        raise PermissionError(
+            "You do not have permission to delete this project.")
+    
+    if request.method == 'POST':
+        project.delete()
+        return redirect('projects')
+    
+    context = {'project': project}
+    return render(request, 'projects/delete_project.html', context)
