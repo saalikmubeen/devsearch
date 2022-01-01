@@ -1,15 +1,16 @@
-from django.http.response import HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from .forms import CustomUserCreationForm
+from .models import Profile
 
 # Create your views here.
 
 
 def index(request):
-    return HttpResponse("Hello, world. You're at the users index.")
+    profiles = Profile.objects.all()
+    return render(request, 'users/index.html', {"profiles": profiles})
 
 
 def loginUser(request):
