@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
-from .forms import CustomUserCreationForm, ProfileForm, SkillForm
+from .forms import CustomUserCreationForm, ProfileForm, SkillForm, CustomPasswordChangeForm
 from .models import Profile, Skill
 
 # Create your views here.
@@ -146,5 +147,25 @@ def delete_skill(request, pk):
         return redirect("account")
     
     return render(request, 'users/delete_skill.html', {"skill": skill})
+
+
+@login_required(login_url='login')
+def change_password(request):
+    
+    if request.method == 'POST':
+        form = CustomPasswordChangeForm(data=request.POST, user=request.user)
+        if form.is_valid():
+            form.save()
+            update_session_auth_hash(request, form.user)
+            messages.success(
+                request, 'Your Password has been changed successfully!')
+            return redirect('account')
+    else:
+        form = CustomPasswordChangeForm(user=request.user)
+        # update_session_auth_hash makes the user to be logged in after
+        # user changes password, otherwise changing passwords logouts
+        # the user by default.
+    context = {'form': form}
+    return render(request, 'users/change_password.html', context)
 
 
