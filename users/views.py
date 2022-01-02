@@ -12,6 +12,14 @@ def index(request):
     profiles = Profile.objects.all()
     return render(request, 'users/index.html', {"profiles": profiles})
 
+def user_profile(request, pk):
+    profile = Profile.objects.get(pk=pk)
+    
+    other_skills = profile.skill_set.filter(description = "") # Get all skills that have no description
+    top_skills = profile.skill_set.exclude(description__exact="") # Get all skills that have a description
+    
+    return render(request, 'users/user-profile.html', {"profile": profile, "other_skills": other_skills, "top_skills": top_skills})
+
 
 def loginUser(request):
     if request.user.is_authenticated:
