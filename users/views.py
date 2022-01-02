@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import CustomUserCreationForm
 from .models import Profile
@@ -75,3 +76,8 @@ def logoutUser(request):
     logout(request)
     messages.success(request, "Successfully logged out")
     return redirect("home")
+
+@login_required(login_url='login')
+def user_account(request):
+    profile = request.user.profile
+    return render(request, 'users/account.html', {"profile": profile})
