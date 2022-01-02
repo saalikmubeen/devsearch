@@ -11,4 +11,5 @@ urlpatterns = [
     path('account/', views.user_account, name="account"),
     
     path("edit-profile/", views.edit_profile, name="edit-profile"),
+    path('create-skill/', views.create_skill, name="create-skill"),
 ]
