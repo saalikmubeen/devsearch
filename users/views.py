@@ -4,7 +4,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .forms import CustomUserCreationForm, ProfileForm, SkillForm
-from .models import Profile
+from .models import Profile, Skill
 
 # Create your views here.
 
@@ -112,3 +112,25 @@ def create_skill(request):
             return redirect("account")
         
     return render(request, 'users/skill_form.html', {"form": form})
+
+
+@login_required(login_url='login')
+def update_skill(request, pk):
+    skill = Skill.objects.get(pk=pk)
+    
+    if skill.owner.id != request.user.profile.id:
+        raise PermissionError("You do not have permission to edit this skill")
+    
+    form = SkillForm(instance=skill)
+
+    if request.method == "POST":
+        form = SkillForm(request.POST, instance=skill)
+        if form.is_valid():
+            skill = form.save(commit=False)
+            skill.owner = request.user.profile
+            skill.save()
+            return redirect("account")
+
+    return render(request, 'users/skill_form.html', {"form": form})
+
+
