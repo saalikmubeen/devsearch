@@ -39,12 +39,28 @@ def deleteUser(sender, instance, **kwargs):
         print("User deleted")
     except:
         pass
+    
+
+# sender = Profile, instance = instance of Profile, created = True or False
+def updateUser(sender, instance, created, **kwargs):
+    if not created:
+        profile = instance
+        user = User.objects.get(username=profile.username)
+        user.first_name = profile.name
+        user.username = profile.username
+        user.email = profile.email
+        user.save()
+        print("User updated")
 
 
 # create profile when user is created
 post_save.connect(createProfile, sender=User)
+
 # delete User when Profile is deleted
 post_delete.connect(deleteUser, sender=Profile)
+
+# update User when Profile is updated
+post_save.connect(updateUser, sender=Profile)
 
 # @receiver(post_save, sender=User)
 # def createProfile(sender, instance, created, **kwargs):

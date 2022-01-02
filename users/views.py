@@ -3,7 +3,7 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .forms import CustomUserCreationForm
+from .forms import CustomUserCreationForm, ProfileForm
 from .models import Profile
 
 # Create your views here.
@@ -81,3 +81,19 @@ def logoutUser(request):
 def user_account(request):
     profile = request.user.profile
     return render(request, 'users/account.html', {"profile": profile})
+
+
+@login_required(login_url='login')
+def edit_profile(request):
+    form = ProfileForm(instance=request.user.profile)
+    
+    if request.method == "POST":
+        form = ProfileForm(request.POST, request.FILES, instance=request.user.profile)
+        
+        if form.is_valid():
+            profile = form.save(commit=False)
+            profile.user = request.user
+            profile.save()
+            return redirect("account")
+        
+    return render(request, 'users/edit_profile.html', {"form": form})
