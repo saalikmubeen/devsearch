@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
@@ -132,5 +132,19 @@ def update_skill(request, pk):
             return redirect("account")
 
     return render(request, 'users/skill_form.html', {"form": form})
+
+
+@login_required(login_url='login')
+def delete_skill(request, pk):
+    skill = get_object_or_404(Skill, pk=pk)
+
+    if skill.owner.id != request.user.profile.id:
+        raise PermissionError("You do not have permission to edit this skill")
+    
+    if request.method == "POST":
+        skill.delete()
+        return redirect("account")
+    
+    return render(request, 'users/delete_skill.html', {"skill": skill})
 
 
