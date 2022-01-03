@@ -2,13 +2,22 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.db.models import Q
 from .models import Project, Tag
 from .forms import ProjectForm, ReviewForm
 
 # Create your views here.
 
 def projects(request):
-    projects = Project.objects.all()
+    search_query = request.GET.get("search_query") or ""
+    
+    tags = Tag.objects.filter(name__icontains=search_query)
+    projects = Project.objects.filter(
+        Q(title__icontains=search_query) |
+        Q(description__icontains=search_query) |
+        Q(owner__name__icontains=search_query) |
+        Q(tags__in=tags)
+    )
     return render(request, "projects/projects.html", {"projects": projects})
 
 
@@ -59,7 +68,8 @@ def create_project(request):
             for tag in newtags:
                 new_tag = Tag.objects.get_or_create(name=tag)
                 project.tags.add(new_tag[0])
-            return redirect("projects")
+                project.save()
+            return redirect("account")
         
     return render(request, "projects/project_form.html", {"form": form})
 
@@ -85,8 +95,8 @@ def update_project(request, pk):
             for tag in newtags:
                 new_tag = Tag.objects.get_or_create(name=tag)
                 project.tags.add(new_tag[0])
-            
-            return redirect("projects")
+                project.save()
+            return redirect("account")
         
     return render(request, "projects/project_form.html", {"form": form})
 
@@ -102,7 +112,7 @@ def delete_project(request, pk):
     
     if request.method == 'POST':
         project.delete()
-        return redirect('projects')
+        return redirect('account')
     
     context = {'project': project}
     return render(request, 'projects/delete_project.html', context)
