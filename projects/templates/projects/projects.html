@@ -81,7 +81,7 @@
             <li><a href="?page={{projects.number}}" class="btn page-link btn btn--sub">{{projects.number}}</a></li>
         {% endif %}
         
-        {% if projects.has_other_pages %}
+        {% if projects.has_next %}
             <li><a href="?page={{ projects.next_page_number }}" class="btn page-link btn">Next &#10095;</a></li>
         {% endif %}
 

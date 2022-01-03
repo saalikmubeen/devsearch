@@ -24,8 +24,9 @@ def projects(request):
     page_number = request.GET.get("page") or 1
     p = Paginator(projects, per_page)
     total_pages = p.num_pages
+    print(total_pages)
     page_range = p.page_range
-    page_obj = p.get_page(page_number)
+    page_obj = p.page(page_number)
     
     
     return render(request, "projects/projects.html", {"projects": page_obj, "page_range": page_range,
