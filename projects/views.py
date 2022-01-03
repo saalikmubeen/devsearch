@@ -62,6 +62,8 @@ def create_project(request):
             project.owner = user_profile
             project.save()
             
+            form.save_m2m()
+            
             for tag in newtags:
                 new_tag = Tag.objects.get_or_create(name=tag)
                 project.tags.add(new_tag[0])
@@ -87,12 +89,15 @@ def update_project(request, pk):
             project = form.save(commit=False)
             project.save()
             
+            form.save_m2m()
+            
             newtags = request.POST.get('newtags').split(',')
             
             for tag in newtags:
-                new_tag = Tag.objects.get_or_create(name=tag)
-                project.tags.add(new_tag[0])
-                project.save()
+                if tag != "":
+                    new_tag = Tag.objects.get_or_create(name=tag)
+                    project.tags.add(new_tag[0])
+                    # project.save()
             return redirect("account")
         
     return render(request, "projects/project_form.html", {"form": form})
