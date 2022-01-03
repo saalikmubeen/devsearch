@@ -6,13 +6,18 @@ from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from .forms import CustomUserCreationForm, ProfileForm, SkillForm, CustomPasswordChangeForm
 from .models import Profile, Skill
+from .utils import search_profiles, paginate_profiles
 
 # Create your views here.
 
 
 def index(request):
-    profiles = Profile.objects.all()
-    return render(request, 'users/index.html', {"profiles": profiles})
+    profiles, search_query = search_profiles(request)
+    
+    page_obj, custom_range, total_pages = paginate_profiles(request, profiles)
+    
+    return render(request, 'users/index.html', {"profiles": page_obj, "search_query": search_query, 
+                                "page_range": custom_range, "total_pages": total_pages})
 
 def user_profile(request, pk):
     profile = Profile.objects.get(pk=pk)
