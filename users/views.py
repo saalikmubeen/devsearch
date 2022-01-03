@@ -173,3 +173,10 @@ def inbox(request):
     received_messages = request.user.profile.received_messages.all()
     unread_messages = received_messages.filter(is_read=False).count()
     return render(request, 'users/inbox.html', {"received_messages": received_messages, "unread_messages": unread_messages})
+
+@login_required(login_url='login')
+def message(request, pk):
+    message = request.user.profile.received_messages.get(pk=pk)
+    message.is_read = True
+    message.save()
+    return render(request, 'users/message.html', {"message": message})
