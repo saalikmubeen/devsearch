@@ -3,14 +3,17 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger 
 from .models import Project, Tag
 from .forms import ProjectForm, ReviewForm
 
 # Create your views here.
 
 def projects(request):
-    search_query = request.GET.get("search_query") or ""
+    search_query = ""
+    
+    if request.GET.get("search_query"):
+        search_query = request.GET.get("search_query")
     
     tags = Tag.objects.filter(name__icontains=search_query)
     projects = Project.objects.distinct().filter(
@@ -20,16 +23,28 @@ def projects(request):
         Q(tags__in=tags)
     )
     
-    per_page = 2
+    per_page = 3
     page_number = request.GET.get("page") or 1
-    p = Paginator(projects, per_page)
-    total_pages = p.num_pages
-    print(total_pages)
-    page_range = p.page_range
-    page_obj = p.page(page_number)
     
+    paginator = Paginator(projects, per_page)
+    total_pages = paginator.num_pages
+    # page_range = paginator.page_range
     
-    return render(request, "projects/projects.html", {"projects": page_obj, "page_range": page_range,
+    try:
+        page_obj = paginator.page(page_number)
+    except EmptyPage:
+        page_obj = paginator.page(total_pages)
+    except PageNotAnInteger:
+        page_obj = paginator.page(1)
+        
+    current_page = page_obj.number
+    
+    left_index =  current_page - 2 if current_page > 2 else 1
+    right_index = current_page + 2 if current_page < total_pages - 1 else total_pages
+    
+    custom_range = range(left_index, right_index + 1)
+    
+    return render(request, "projects/projects.html", {"projects": page_obj, "page_range": custom_range,
                                                 "total_pages": total_pages, "search_query": search_query})
 
 
