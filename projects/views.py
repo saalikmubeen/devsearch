@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.db.models import Q
+from django.core.paginator import Paginator
 from .models import Project, Tag
 from .forms import ProjectForm, ReviewForm
 
@@ -12,13 +13,23 @@ def projects(request):
     search_query = request.GET.get("search_query") or ""
     
     tags = Tag.objects.filter(name__icontains=search_query)
-    projects = Project.objects.filter(
+    projects = Project.objects.distinct().filter(
         Q(title__icontains=search_query) |
         Q(description__icontains=search_query) |
         Q(owner__name__icontains=search_query) |
         Q(tags__in=tags)
     )
-    return render(request, "projects/projects.html", {"projects": projects})
+    
+    per_page = 2
+    page_number = request.GET.get("page") or 1
+    p = Paginator(projects, per_page)
+    total_pages = p.num_pages
+    page_range = p.page_range
+    page_obj = p.get_page(page_number)
+    
+    
+    return render(request, "projects/projects.html", {"projects": page_obj, "page_range": page_range,
+                                                "total_pages": total_pages, "search_query": search_query})
 
 
 def project(request, pk):
