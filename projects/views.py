@@ -1,7 +1,9 @@
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import Project, Tag
-from .forms import ProjectForm
+from .forms import ProjectForm, ReviewForm
 
 # Create your views here.
 
@@ -12,7 +14,32 @@ def projects(request):
 
 def project(request, pk):
     project = get_object_or_404(Project, pk=pk)
-    return render(request, "projects/project.html", {"project": project})
+    form = ReviewForm()
+    
+    reviews = project.review_set.all()
+    
+    already_reviewed = False
+    if request.user.is_authenticated:
+        already_reviewed = any([review.owner.id == request.user.profile.id for review in reviews])
+        
+        #OR
+        # already_reviewed = request.user.profile.id in project.reviewers()
+    
+    if request.method == "POST":
+        form = ReviewForm(request.POST)
+        if form.is_valid():
+            review = form.save(commit=False)
+            review.owner = request.user.profile
+            review.project = project
+            review.save()
+            project.count_votes()
+            
+            messages.success(
+                request, 'Your review was successfully submitted!')
+            
+            return redirect(reverse("project", kwargs={"pk": project.id}))
+    
+    return render(request, "projects/project.html", {"project": project, "form": form, "reviews": reviews, "already_reviewed": already_reviewed})
 
 
 @login_required(login_url="login")

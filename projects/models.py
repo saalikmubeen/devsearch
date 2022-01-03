@@ -21,7 +21,20 @@ class Project(models.Model):
     
     def __str__(self):
         return self.title
-
+    class Meta:
+        ordering = ['-vote_ratio', '-vote_total', 'title']
+    
+    def count_votes(self):
+        total_votes = self.review_set.all().count()
+        up_votes = self.review_set.filter(value="up").count()
+        up_votes_ratio = (up_votes / total_votes) * 100
+        self.vote_total = total_votes
+        self.vote_ratio = up_votes_ratio    
+        self.save()
+    
+    def reviewers(self):
+        queryset = self.review_set.all().values_list('owner__id', flat=True)
+        return queryset
 
 class Tag(models.Model):
     id = models.UUIDField(default=uuid.uuid4, unique=True, primary_key=True, editable=False)
