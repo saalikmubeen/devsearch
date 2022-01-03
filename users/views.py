@@ -168,4 +168,8 @@ def change_password(request):
     context = {'form': form}
     return render(request, 'users/change_password.html', context)
 
-
+@login_required(login_url='login')
+def inbox(request):
+    received_messages = request.user.profile.received_messages.all()
+    unread_messages = received_messages.filter(is_read=False).count()
+    return render(request, 'users/inbox.html', {"received_messages": received_messages, "unread_messages": unread_messages})
