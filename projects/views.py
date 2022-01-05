@@ -9,6 +9,7 @@ from .utils import search_projects, paginate_projects
 # Create your views here.
 
 def projects(request):
+    print(request.path)
     
     projects, search_query = search_projects(request)
     
@@ -65,7 +66,7 @@ def create_project(request):
             form.save_m2m()
             
             for tag in newtags:
-                new_tag = Tag.objects.get_or_create(name=tag)
+                new_tag = Tag.objects.get_or_create(name=tag) # new_tag = (tag, created) -> created = Boolean
                 project.tags.add(new_tag[0])
                 project.save()
             return redirect("account")

@@ -32,6 +32,8 @@ def loginUser(request):
     if request.user.is_authenticated:
         return redirect("home")
     
+    redirect_url = request.GET.get('next')
+    
     if request.method == "POST":
         username = request.POST['username'].lower()
         password = request.POST['password']
@@ -46,7 +48,7 @@ def loginUser(request):
         if user is not None:
             login(request, user)
             messages.success(request, "Successfully logged in")
-            return redirect("home")
+            return redirect(redirect_url if redirect_url else "account")
         else:
             messages.error(request, "Invalid username or password")
             
