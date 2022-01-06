@@ -9,7 +9,6 @@ from .utils import search_projects, paginate_projects
 # Create your views here.
 
 def projects(request):
-    print(request.path)
     
     projects, search_query = search_projects(request)
     
